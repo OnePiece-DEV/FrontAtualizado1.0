@@ -2,17 +2,17 @@ import '../login/styles/register.css';
 import image from './assets/image.png';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Importar o hook de navegação
+import axios from 'axios'; // Importar axios
 
-
-const login = () => {
+const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
 
   const [message, setMessage] = useState('');
-  const navigate = useNavigate(); // Definir o hook de navegação
   const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate(); // Definir o hook de navegação
 
   const handleChange = (e) => {
     setFormData({
@@ -21,26 +21,29 @@ const login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validação simples: Email e senha hardcoded
-    const validUser = {
-      email: 'admin@admin.com',
-      password: 'admin'
-    };
-    if (formData.email === validUser.email && formData.password === validUser.password) {
+    try {
+      const response = await axios.post('http://localhost:8080/login', formData);
+      // Supondo que a resposta positiva significa login bem-sucedido
+      if (response.status === 200) {
         setErrorMessage('');
         navigate('/home'); // Redireciona para outra página (exemplo de dashboard)
-      } else {
-        setErrorMessage('Credenciais inválidas. Por favor, tente novamente.');
       }
-}
+    } catch (error) {
+      if (error.response && error.response.status === 401) {
+        setErrorMessage('Credenciais inválidas. Por favor, tente novamente.');
+      } else {
+        setErrorMessage('Ocorreu um erro. Por favor, tente novamente.');
+      }
+    }
+  };
 
   return (
     <div className="register-container">
       <div className="image-section">
-      <img src={image} alt="teste" />
+        <img src={image} alt="teste" />
       </div>
       <div className="form-section">
         <h1>Login</h1>
@@ -48,27 +51,28 @@ const login = () => {
           <div className="input-group">
             <label>Email:</label>
             <input 
-            type="text" 
-            className="form-control" 
-            id="email" 
-            name="email" 
-            value={formData.email} 
-            onChange={handleChange} 
-            required 
-          />          
+              type="text" 
+              className="form-control" 
+              id="email" 
+              name="email" 
+              value={formData.email} 
+              onChange={handleChange} 
+              required 
+            />
           </div>
 
           <div className="input-group">
             <label>Senha:</label>
             <input 
-            type="password" 
-            className="form-control" 
-            id="password" 
-            name="password" 
-            value={formData.password} 
-            onChange={handleChange} 
-            required 
-          />          </div>
+              type="password" 
+              className="form-control" 
+              id="password" 
+              name="password" 
+              value={formData.password} 
+              onChange={handleChange} 
+              required 
+            />
+          </div>
 
           <div className="checkbox-group">
             <input type="checkbox" />
@@ -78,11 +82,11 @@ const login = () => {
           </div>
           <button type="submit" className="btn btn-primary">Logar</button>
         </form>
-        {message && <p className="mt-3">{message}</p>}
+        {errorMessage && <p className="mt-3">{errorMessage}</p>}
         <p className="login-link">Esqueceu a senha? <a href="#">Clique aqui</a></p>
       </div>
     </div>
   );
 }
 
-export default login;
+export default Login;
